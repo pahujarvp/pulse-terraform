@@ -12,7 +12,7 @@ variable "root_public_ip" {}
 variable "root_vms" {}
 variable "root_data_disks" {}
 variable "root_key_vault" {}
-variable "root_monitor_workspace" {}
+variable "root_action_group" {}
 
 
 

@@ -98,13 +98,14 @@ module "linux_virtual_machine" {
   public_ip_id        = data.azurerm_public_ip.pip_vm.id
 }
 
-
-module "monitor_workspace" {
-  ## To-Be created after Resourcegroup
+## Action Group 
+module "action_group" {
+   ## To-Be created after Resourcegroup
   depends_on = [module.resource_group]
-
-  source              = "../../modules/monitor_workspace"
-  child_public_ip     = var.root_monitor_workspace
-  resource_group_name = var.root_resource_group["workload"].name
-  location            = var.root_resource_group["workload"].location
+ 
+  source = "../../modules/action_group"
+  child_action_group = var.root_action_group
+  
+  resource_group_name = var.root_resource_group["monitoring"].name
+  
 }
