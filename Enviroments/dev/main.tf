@@ -107,5 +107,14 @@ module "action_group" {
   child_action_group = var.root_action_group
 
   resource_group_name = var.root_resource_group["monitoring"].name
+}
 
+## Logic App
+module "logic_app" {
+  depends_on = [module.resource_group]
+  
+  source = "../../modules/logic_app"
+  child_logic_app = var.root_action_group
+  location = var.root_resource_group["monitoring"].location
+  resource_group_name = var.root_resource_group["monitoring"].name
 }

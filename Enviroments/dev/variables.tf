@@ -33,3 +33,4 @@ variable "root_data_disks" {}
 # 7. Monitoring & Alerting
 
 variable "root_action_group" {}
+variable "root_logic_app" {}
