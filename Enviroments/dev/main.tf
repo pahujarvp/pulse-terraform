@@ -39,14 +39,14 @@ module "network_security_group" {
 }
 
 ## Network Security Rule
-module "network_security_rule" {
-  ## To-Be created after Network Security Group
-  depends_on = [module.network_security_group]
+# module "network_security_rule" {
+#   ## To-Be created after Network Security Group
+#   depends_on = [module.network_security_group]
 
-  source                       = "../../modules/network_security_rule"
-  child_network_security_rules = var.root_network_security_rules
-  resource_group_name          = var.root_resource_group["workload"].name
-}
+#   source                       = "../../modules/network_security_rule"
+#   child_network_security_rules = var.root_network_security_rules
+#   resource_group_name          = var.root_resource_group["workload"].name
+# }
 
 ## Public IP
 module "public_ip" {
@@ -100,12 +100,12 @@ module "linux_virtual_machine" {
 
 ## Action Group 
 module "action_group" {
-   ## To-Be created after Resourcegroup
+  ## To-Be created after Resourcegroup
   depends_on = [module.resource_group]
- 
-  source = "../../modules/action_group"
+
+  source             = "../../modules/action_group"
   child_action_group = var.root_action_group
-  
+
   resource_group_name = var.root_resource_group["monitoring"].name
-  
+
 }
