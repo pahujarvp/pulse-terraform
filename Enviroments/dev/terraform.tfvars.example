@@ -1,0 +1,149 @@
+# ==============================================================================
+# PULSE INFRASTRUCTURE - DEV ENVIRONMENT VARIABLES TEMPLATE
+# ==============================================================================
+# Usage:
+#   1. Copy this file or individual sections to *.auto.tfvars or terraform.tfvars.
+#   2. Adjust parameter values according to target environment requirements.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Base Foundation (Resource Groups)
+# ------------------------------------------------------------------------------
+root_resource_group = {
+  workload = {
+    name     = "rg-pulse-workload-01"
+    location = "Central India"
+  }
+  monitoring = {
+    name     = "rg-pulse-monitor-01"
+    location = "Central India"
+  }
+}
+
+# ------------------------------------------------------------------------------
+# 2. Networking Infrastructure (VNet & Subnets)
+# ------------------------------------------------------------------------------
+root_virtual_network = {
+  vnet1 = {
+    name          = "vnet-pulse-cin-01"
+    address_space = ["10.0.0.0/16"]
+  }
+}
+
+root_subnets = {
+  snet_workload = {
+    name             = "snet-pulse-workload-cin-01"
+    address_prefixes = ["10.0.1.0/24"]
+  }
+}
+
+# ------------------------------------------------------------------------------
+# 3. Network Security (NSG & NSG Rules)
+# ------------------------------------------------------------------------------
+root_network_security_group = {
+  nsg1 = {
+    name = "nsg-pulse-workload-cin-01"
+  }
+}
+
+# Standalone NSG rules (optional)
+# root_network_security_rules = {
+#   rule_ssh = {
+#     name                        = "allow_ssh"
+#     priority                    = 100
+#     direction                   = "Inbound"
+#     access                      = "Allow"
+#     protocol                    = "Tcp"
+#     source_port_range           = "*"
+#     destination_port_range      = "22"
+#     source_address_prefix       = "*"
+#     destination_address_prefix  = "*"
+#     network_security_group_name = "nsg-pulse-workload-cin-01"
+#   }
+#   rule_http = {
+#     name                        = "allow_http"
+#     priority                    = 200
+#     direction                   = "Inbound"
+#     access                      = "Allow"
+#     protocol                    = "Tcp"
+#     source_port_range           = "*"
+#     destination_port_range      = "80"
+#     source_address_prefix       = "*"
+#     destination_address_prefix  = "*"
+#     network_security_group_name = "nsg-pulse-workload-cin-01"
+#   }
+# }
+
+# ------------------------------------------------------------------------------
+# 4. Public Connectivity (Public IP & Optional Application Gateway)
+# ------------------------------------------------------------------------------
+root_public_ip = {
+  pip_vm = {
+    name              = "pip-pulse-linux-01"
+    allocation_method = "Static"
+    sku               = "Standard"
+  }
+}
+
+# Application Gateway configuration (optional / when AppGW module is enabled)
+# root_appgw = {
+#   appgw1 = {
+#     name     = "appgw-pulse-cin-01"
+#     sku_name = "Standard_v2"
+#     sku_tier = "Standard_v2"
+#     capacity = 1
+#   }
+# }
+
+# ------------------------------------------------------------------------------
+# 5. Security & Secrets Management (Key Vault)
+# ------------------------------------------------------------------------------
+root_key_vault = {
+  kv1 = {
+    name     = "kv-pulse-cin-01"
+    sku_name = "standard"
+  }
+}
+
+# ------------------------------------------------------------------------------
+# 6. Compute & Storage Workloads (Linux VM & Data Disks)
+# ------------------------------------------------------------------------------
+root_vms = {
+  vm1 = {
+    name           = "vm-pulse-linux-01"
+    nic_name       = "nic-pulse-linux-01"
+    os_disk_name   = "disk-pulse-os-01"
+    size           = "Standard_B2s" # or Standard_B2ts_v2 based on regional availability
+    admin_username = "azureuser"
+    admin_password = "********"
+    os_disk_type   = "Standard_LRS"
+  }
+}
+
+root_data_disks = {
+  data_disk1 = {
+    name                 = "disk-pulse-data-01"
+    vm_key               = "vm1"
+    storage_account_type = "Standard_LRS"
+    disk_size_gb         = 10
+    lun                  = 0
+    caching              = "ReadWrite"
+  }
+}
+
+# ------------------------------------------------------------------------------
+# 7. Monitoring & Alerting (Action Group & Logic App)
+# ------------------------------------------------------------------------------
+root_action_group = {
+  group1 = {
+    name       = "ag-pulse-alert-01"
+    short_name = "Email"
+  }
+}
+
+root_logic_app = {
+  app1 = {
+    name = "logic-app-pulse-01"
+  }
+}
+

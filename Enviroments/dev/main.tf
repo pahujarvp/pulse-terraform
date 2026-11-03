@@ -91,7 +91,7 @@ module "linux_virtual_machine" {
 
   source              = "../../modules/linux_virtual_machine"
   child_vms           = var.root_vms
-  child_data_disks    = var.root_data_disks
+  # child_data_disks    = var.root_data_disks
   resource_group_name = var.root_resource_group["workload"].name
   location            = var.root_resource_group["workload"].location
   subnet_id           = data.azurerm_subnet.snet_workload.id
@@ -111,10 +111,24 @@ module "action_group" {
 
 ## Logic App
 module "logic_app" {
+  ## To-Be created after Resourcegroup
   depends_on = [module.resource_group]
-  
-  source = "../../modules/logic_app"
-  child_logic_app = var.root_action_group
-  location = var.root_resource_group["monitoring"].location
+
+  source              = "../../modules/logic_app"
+  child_logic_app     = var.root_logic_app
+  location            = var.root_resource_group["monitoring"].location
   resource_group_name = var.root_resource_group["monitoring"].name
 }
+
+
+# resource "azurerm_monitor_metric_alert" "example" {
+#   name                = "example-metricalert"
+#   resource_group_name = var.root_resource_group["monitoring"].location
+#   scopes              = var.root_resource_group["monitoring"].id
+#    #[azurerm_storage_account.to_monitor.id]
+
+#   # action {
+#   #   action_group_id = var.root_action_group.["ag"].id
+#   # }  
+# }
+

@@ -1,5 +1,5 @@
 
-# Enviroment Variables
+# Environment Variables
 
 
 # 1. Base Foundation
@@ -28,7 +28,7 @@ variable "root_key_vault" {}
 # 6. Compute & Storage Workloads
 
 variable "root_vms" {}
-variable "root_data_disks" {}
+# variable "root_data_disks" {}
 
 # 7. Monitoring & Alerting
 

@@ -1,7 +1,7 @@
 variable "child_vms" {}
-variable "child_data_disks" {
-  default = {}
-}
+# variable "child_data_disks" {
+#   default = {}
+# }
 variable "resource_group_name" {}
 variable "location" {}
 variable "subnet_id" {}
