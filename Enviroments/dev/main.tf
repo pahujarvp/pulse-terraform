@@ -89,8 +89,8 @@ module "linux_virtual_machine" {
   ## To-Be created after Subnet and Public IP
   depends_on = [module.subnet, module.public_ip]
 
-  source              = "../../modules/linux_virtual_machine"
-  child_vms           = var.root_vms
+  source    = "../../modules/linux_virtual_machine"
+  child_vms = var.root_vms
   # child_data_disks    = var.root_data_disks
   resource_group_name = var.root_resource_group["workload"].name
   location            = var.root_resource_group["workload"].location
@@ -120,15 +120,14 @@ module "logic_app" {
   resource_group_name = var.root_resource_group["monitoring"].name
 }
 
+## Matric Alert
 
-# resource "azurerm_monitor_metric_alert" "example" {
-#   name                = "example-metricalert"
-#   resource_group_name = var.root_resource_group["monitoring"].location
-#   scopes              = var.root_resource_group["monitoring"].id
-#    #[azurerm_storage_account.to_monitor.id]
+module "alerts" {
+  depends_on          = [module.linux_virtual_machine]
+  source              = "../../modules/alerts"
+  child_alerts        = var.root_alert
+  resource_group_name = var.root_resource_group["monitoring"].name
+  target_resource_id  = data.azurerm_virtual_machine.vm1.id
+  action_group_id     = data.azurerm_monitor_action_group.group2.id
 
-#   # action {
-#   #   action_group_id = var.root_action_group.["ag"].id
-#   # }  
-# }
-
+}

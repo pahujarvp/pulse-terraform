@@ -34,3 +34,5 @@ variable "root_vms" {}
 
 variable "root_action_group" {}
 variable "root_logic_app" {}
+variable "root_alert" {}
+
