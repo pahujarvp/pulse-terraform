@@ -5,7 +5,19 @@
 [![Region](https://img.shields.io/badge/Region-Central%20India-blue)](https://azure.microsoft.com/en-us/global-infrastructure/geographies/#geographies)
 [![Environment](https://img.shields.io/badge/Environment-Dev-success)](#)
 
-Enterprise Infrastructure-as-Code (IaC) repository for **Project Pulse**, provisioning a secure, modular cloud foundation in Microsoft Azure using HashiCorp Terraform.
+A demonstration of production-grade cloud engineering and Infrastructure as Code (IaC) in **Microsoft Azure**, built with **HashiCorp Terraform**.
+
+---
+
+## 🎯 Project Objectives & Highlights
+
+This project showcases a production-ready, hands-on implementation of core cloud architecture patterns:
+
+* **Modular IaC Architecture:** 100% modular design with reusable child modules (`modules/`) separating compute, networking, security, storage, and monitoring.
+* **Resilient Remote State:** Remote state backend hosted on Azure Blob Storage with automated lease-based state locking.
+* **Separation of Concerns:** Purpose-driven resource groups isolating workload resources (`rg-pulse-workload-01`) from observability infrastructure (`rg-pulse-monitor-01`).
+* **Integrated Observability Pipeline:** Native integration linking Linux compute metrics directly to Azure Monitor Metric Alerts, multi-tier Action Groups, and automated Logic App workflows.
+* **Zero Hardcoding:** Dynamic data lookups via `data.tf` and clean map iterations using `for_each` and domain-split `.auto.tfvars`.
 
 ---
 
@@ -13,17 +25,17 @@ Enterprise Infrastructure-as-Code (IaC) repository for **Project Pulse**, provis
 
 Comprehensive engineering specifications, system flows, and observability architectures are cataloged in the dedicated architecture directories:
 
-| Document | Description | Direct Links |
+| Document | Primary Focus | Direct Links |
 | :--- | :--- | :--- |
-| **High-Level Design (HLD)** | Complete platform design, physical/logical hierarchy, network, security, and risk analysis. | [documentation/architecture/azure-high-level-design.md](documentation/architecture/azure-high-level-design.md)<br/>[architecture/azure-high-level-design.md](architecture/azure-high-level-design.md) |
-| **Observability Architecture** | Azure Monitor workflow, metric alerts, action groups, logic apps, and gap analysis. | [documentation/architecture/monitoring-observability-design.md](documentation/architecture/monitoring-observability-design.md)<br/>[architecture/monitoring-observability-design.md](architecture/monitoring-observability-design.md) |
-| **System Diagrams** | Standalone Mermaid diagrams for topology, segmentation, alerts, and sequence flows. | [documentation/architecture/diagrams.md](documentation/architecture/diagrams.md)<br/>[architecture/diagrams.md](architecture/diagrams.md) |
+| **High-Level Design (HLD)** | Complete platform design, physical/logical hierarchy, network topology, and security plane. | [architecture/azure-high-level-design.md](architecture/azure-high-level-design.md)<br/>[documentation/architecture/azure-high-level-design.md](documentation/architecture/azure-high-level-design.md) |
+| **Observability Architecture** | Azure Monitor workflow, metric alerts, action groups, and serverless Logic App integration. | [architecture/monitoring-observability-design.md](architecture/monitoring-observability-design.md)<br/>[documentation/architecture/monitoring-observability-design.md](documentation/architecture/monitoring-observability-design.md) |
+| **System Diagrams** | Visual Mermaid models for topology, network segmentation, telemetry pipeline, and runtime sequence flow. | [architecture/diagrams.md](architecture/diagrams.md)<br/>[documentation/architecture/diagrams.md](documentation/architecture/diagrams.md) |
 
 ---
 
 ## 🏛️ Infrastructure Architecture Overview
 
-The platform is deployed in **Central India** across two purpose-built resource groups, separating core workload processing from management and monitoring planes:
+The platform is deployed in **Central India** across two specialized resource groups:
 
 ```mermaid
 flowchart TD
@@ -33,28 +45,28 @@ flowchart TD
         end
 
         subgraph Workload_RG["Workload Resource Group: rg-pulse-workload-01"]
-            KV["Key Vault: kv-pulse-cin-01<br/>(Standard / Disk Encryption)"]
-            PIP["Public IP: pip-pulse-linux-01<br/>(Static / Standard)"]
+            KV["Key Vault: kv-pulse-cin-01<br/>Standard SKU / Disk Encryption"]
+            PIP["Public IP: pip-pulse-linux-01<br/>Static / Standard SKU"]
             
             subgraph VNet["Virtual Network: vnet-pulse-cin-01 (10.0.0.0/16)"]
                 subgraph Subnet["Subnet: snet-pulse-workload-cin-01 (10.0.1.0/24)"]
                     NIC["NIC: nic-pulse-linux-01"]
-                    VM["Linux VM: vm-pulse-linux-01<br/>(Standard_B2ts_v2 / Ubuntu 22.04 LTS)"]
-                    OSD["Managed OS Disk: disk-pulse-os-01<br/>(Standard_LRS / 30 GB)"]
+                    VM["Linux VM: vm-pulse-linux-01<br/>Standard_B2ts_v2 / Ubuntu 22.04 LTS"]
+                    OSD["Managed OS Disk: disk-pulse-os-01<br/>Standard_LRS / 30 GB"]
                     NIC --> VM
                     VM --> OSD
                 end
             end
             
-            NSG["Network Security Group: nsg-pulse-workload-cin-01<br/>(Container Only)"]
+            NSG["Network Security Group: nsg-pulse-workload-cin-01"]
             PIP --> NIC
         end
 
         subgraph Monitoring_RG["Monitoring Resource Group: rg-pulse-monitor-01"]
-            AG_EMAIL["Action Group: ag-pulse-email-alert<br/>(Short Name: email)"]
-            AG_ITIL["Action Group: ag-pulse-itil-alert<br/>(Short Name: itil)"]
-            LOGIC["Logic App: logic-app-pulse-01<br/>(Workflow Automation)"]
-            ALERT["Metric Alert: alert-pulse<br/>(Percentage CPU > 40%)"]
+            AG_EMAIL["Action Group: ag-pulse-email-alert<br/>Short Name: email"]
+            AG_ITIL["Action Group: ag-pulse-itil-alert<br/>Short Name: itil"]
+            LOGIC["Logic App: logic-app-pulse-01<br/>Workflow Automation"]
+            ALERT["Metric Alert: alert-pulse<br/>Percentage CPU > 40%"]
         end
     end
 
@@ -65,35 +77,61 @@ flowchart TD
 
 ---
 
-## 📋 Key Azure Resources (Implementation Inventory)
+## 📋 Deployed Azure Resource Inventory
 
-The following inventory details all live resources managed by Terraform in this codebase:
+The following table catalogs the live resources managed by Terraform in this codebase:
 
 | Resource Category | Azure Resource Type | Identifier / Resource Name | Resource Group | Key Specifications |
 | :--- | :--- | :--- | :--- | :--- |
-| **Resource Group** | `azurerm_resource_group` | `rg-pulse-workload-01` | Subscription Root | Location: `Central India` |
-| **Resource Group** | `azurerm_resource_group` | `rg-pulse-monitor-01` | Subscription Root | Location: `Central India` |
-| **Virtual Network** | `azurerm_virtual_network` | `vnet-pulse-cin-01` | `rg-pulse-workload-01` | Address space: `10.0.0.0/16` |
-| **Subnet** | `azurerm_subnet` | `snet-pulse-workload-cin-01` | `rg-pulse-workload-01` | Prefix: `10.0.1.0/24` |
-| **Network Security**| `azurerm_network_security_group`| `nsg-pulse-workload-cin-01`| `rg-pulse-workload-01` | Standalone NSG container |
+| **Foundation** | `azurerm_resource_group` | `rg-pulse-workload-01` | Subscription Root | Location: `Central India` |
+| **Foundation** | `azurerm_resource_group` | `rg-pulse-monitor-01` | Subscription Root | Location: `Central India` |
+| **Networking** | `azurerm_virtual_network` | `vnet-pulse-cin-01` | `rg-pulse-workload-01` | Address space: `10.0.0.0/16` |
+| **Networking** | `azurerm_subnet` | `snet-pulse-workload-cin-01` | `rg-pulse-workload-01` | Address prefix: `10.0.1.0/24` |
+| **Security** | `azurerm_network_security_group`| `nsg-pulse-workload-cin-01`| `rg-pulse-workload-01` | Standalone NSG boundary |
 | **Public IP** | `azurerm_public_ip` | `pip-pulse-linux-01` | `rg-pulse-workload-01` | Static allocation, Standard SKU |
 | **Network Interface**| `azurerm_network_interface`| `nic-pulse-linux-01` | `rg-pulse-workload-01` | Dynamic Private IP, attached to PIP |
 | **Compute VM** | `azurerm_linux_virtual_machine` | `vm-pulse-linux-01` | `rg-pulse-workload-01` | `Standard_B2ts_v2`, Canonical Ubuntu 22.04 LTS |
 | **OS Storage** | `azurerm_managed_disk` | `disk-pulse-os-01` | `rg-pulse-workload-01` | `Standard_LRS`, `ReadWrite` caching |
-| **Key Vault** | `azurerm_key_vault` | `kv-pulse-cin-01` | `rg-pulse-workload-01` | Standard SKU, Soft delete 7d, Purge off |
+| **Key Vault** | `azurerm_key_vault` | `kv-pulse-cin-01` | `rg-pulse-workload-01` | Standard SKU, Soft delete 7d, Disk encryption enabled |
 | **Action Group** | `azurerm_monitor_action_group` | `ag-pulse-email-alert` | `rg-pulse-monitor-01` | Notification container (Email) |
-| **Action Group** | `azurerm_monitor_action_group` | `ag-pulse-itil-alert` | `rg-pulse-monitor-01` | Notification container (ITIL / Ticketing) |
+| **Action Group** | `azurerm_monitor_action_group` | `ag-pulse-itil-alert` | `rg-pulse-monitor-01` | Incident management container (ITIL / Ticketing) |
 | **Serverless Logic**| `azurerm_logic_app_workflow` | `logic-app-pulse-01` | `rg-pulse-monitor-01` | Consumption plan workflow |
-| **Metric Alert** | `azurerm_monitor_metric_alert` | `alert-pulse` | `rg-pulse-monitor-01` | CPU > 40%, Window: PT5M, Frequency: PT1M |
+| **Metric Alert** | `azurerm_monitor_metric_alert` | `alert-pulse` | `rg-pulse-monitor-01` | CPU > 40%, Window: PT5M, Frequency: PT1M, Auto-Mitigate |
 
 ---
 
-## 🔒 Network & Security Posture
+## 🛠️ Reusable Terraform Module Structure
 
-* **Network Isolation:** Private workload resides within `snet-pulse-workload-cin-01` (`10.0.1.0/24`).
-* **Ingress Access:** A static Standard Public IP is directly bound to the VM's Network Interface.
-* **Encryption at Rest:** Azure-managed keys encrypt OS disk volumes; Key Vault is enabled for disk encryption access.
-* **Secrets Management:** `kv-pulse-cin-01` provisioned with tenant-scoped authentication dynamically sourced via client configuration.
+The project employs an industry-standard directory layout:
+
+```text
+healops-terraform/
+├── Enviroments/
+│   └── dev/
+│       ├── provider.tf                   # Backend and AzureRM provider configuration
+│       ├── main.tf                       # Module invocations with explicit dependencies
+│       ├── data.tf                       # Dynamic data source lookups (zero hardcoding)
+│       ├── variables.tf                  # Clean, sequence-tiered variable definitions
+│       ├── terraform.tfvars.example      # Documented reference template for team members
+│       ├── resource_group.auto.tfvars   # Foundation inputs
+│       ├── network.auto.tfvars          # VNet, Subnet, and Public IP inputs
+│       ├── security.auto.tfvars         # Key Vault inputs
+│       ├── compute.auto.tfvars          # Linux VM and disk inputs
+│       └── monitoring.auto.tfvars       # Action Groups, Logic App, and Alert inputs
+├── modules/
+│   ├── resource_groups/                 # Resource Group module
+│   ├── virtual_network/                 # Virtual Network module
+│   ├── subnet/                          # Subnet module
+│   ├── network_security_group/          # NSG module
+│   ├── public_ip/                       # Public IP module
+│   ├── key_vault/                       # Azure Key Vault module
+│   ├── linux_virtual_machine/           # Compute VM and NIC module
+│   ├── action_group/                    # Azure Monitor Action Group module
+│   ├── logic_app/                       # Azure Logic App module
+│   └── alerts/                          # Azure Monitor Metric Alert module
+├── architecture/                        # Core architecture documentation
+└── documentation/architecture/          # Comprehensive design specifications
+```
 
 ---
 
@@ -125,7 +163,7 @@ sequenceDiagram
 
 ## 🚀 Deployment Sequence & Execution Flow
 
-The architecture follows a strict 7-tier deployment sequence. Dependencies are managed via explicit `depends_on` blocks in [`Enviroments/dev/main.tf`](Enviroments/dev/main.tf):
+The architecture follows a strict 7-tier deployment order managed via explicit `depends_on` blocks in [`Enviroments/dev/main.tf`](Enviroments/dev/main.tf):
 
 1. **Tier 1 - Base Foundation:** Resource Groups (`rg-pulse-workload-01`, `rg-pulse-monitor-01`).
 2. **Tier 2 - Network Foundation:** Virtual Network (`10.0.0.0/16`) and Subnet (`10.0.1.0/24`).
@@ -135,34 +173,21 @@ The architecture follows a strict 7-tier deployment sequence. Dependencies are m
 6. **Tier 6 - Compute Workloads:** Linux Virtual Machine (`vm-pulse-linux-01`) and OS Disk.
 7. **Tier 7 - Monitoring & Observability:** Action Groups, Logic App Workflow, and Metric Alerts.
 
-### Executing Terraform Commands
-
-All commands are run from the environment directory:
+### CLI Commands
 
 ```bash
 cd Enviroments/dev
 
-# 1. Initialize backend and child modules
+# 1. Initialize backend and modules
 terraform init
 
-# 2. Format and validate syntax
+# 2. Format and validate
 terraform fmt -recursive
 terraform validate
 
-# 3. Generate and inspect execution plan
+# 3. Review execution plan
 terraform plan
 
-# 4. Apply configuration to Azure
+# 4. Apply configuration
 terraform apply
 ```
-
----
-
-## ⚠️ Infrastructure Gaps & Hardening Recommendations
-
-The following items are identified from the code audit as recommended production improvements:
-
-1. **Network Security Association:** The NSG `nsg-pulse-workload-cin-01` is not currently bound to `snet-pulse-workload-cin-01`. An `azurerm_subnet_network_security_group_association` should be added to secure inbound traffic.
-2. **SSH Key Authentication:** The VM currently uses password authentication with plain text in `.auto.tfvars`. Transitioning to `admin_ssh_key` is strongly recommended.
-3. **Log Analytics Workspace:** A central `azurerm_log_analytics_workspace` and `azurerm_monitor_diagnostic_setting` are needed to capture VM syslog, Key Vault audit events, and network logs.
-4. **Action Group Endpoints:** Populate `email_receiver` and `logic_app_receiver` inside `modules/action_group` so alert notifications reach human responders and automated runbooks.
